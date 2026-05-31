@@ -1,6 +1,3 @@
-# Generator output — reproduced on install by the CLI.
+# Generator output — produced by the `roblox-api-generator` binary
+# that ships with `roblox-csharp` in the Aftman release zip.
 stubs/Generated/
-
-# .NET build artifacts (if someone runs the generator standalone)
-bin/
-obj/

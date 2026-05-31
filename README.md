@@ -1,6 +1,8 @@
 # roblox-csharp-roblox-api
 
-Roblox engine API type stubs for [roblox-csharp](https://github.com/Stiexeno/roblox-csharp). Provides `Instance`, `Vector3`, every service, every enum — generated fresh from the official Roblox API dump on install. Distributed as a plugin so API updates flow via a normal `git pull` without forcing a CLI release.
+Roblox engine API type stubs for [roblox-csharp](https://github.com/Stiexeno/roblox-csharp). Provides `Instance`, `Vector3`, every service, every enum.
+
+The actual generation lives in `roblox-api-generator`, a CLI tool that ships in the same Aftman release zip as `roblox-csharp`. Installing the compiler installs the generator too — this plugin is just where the output lands.
 
 ## Install
 
@@ -8,27 +10,28 @@ Roblox engine API type stubs for [roblox-csharp](https://github.com/Stiexeno/rob
 roblox-csharp plugin add Stiexeno/roblox-csharp-roblox-api
 ```
 
-`roblox-csharp init` installs this automatically; you don't run the command above unless you're adding it to an existing project. On install, the CLI compiles `generator/` in-process with Roslyn, runs it against the current Mini-API-Dump.json + creator-docs YAML, and populates `stubs/Generated/`. No NuGet feed, no auth, no separate SDK required — just whatever the CLI already brought along.
+`roblox-csharp init` does this automatically. After cloning, the CLI runs `roblox-api-generator` against `stubs/`, populating `stubs/Generated/` with the current API surface. Nothing in the repo needs to change between Roblox API releases — `git pull` followed by `roblox-csharp` re-runs the generator with whatever dump the CLI's `roblox-api-generator` knows about.
 
 ## Updating to the latest Roblox API
 
 ```sh
 git -C plugins/RobloxApi pull
-roblox-csharp
+roblox-csharp plugin add Stiexeno/roblox-csharp-roblox-api --as RobloxApi  # re-runs the generator
+# or just: roblox-api-generator plugins/RobloxApi/stubs/
 ```
-
-The next compile picks up the new generator (if any) and re-emits the stubs.
 
 ## Repo layout
 
 | Path | What it is |
 |---|---|
-| `manifest.json` | Plugin metadata. `"generate": true` is the signal the CLI uses to run the generator on install. |
+| `manifest.json` | Plugin metadata. |
 | `stubs/RobloxBuiltinAttribute.cs` | Marker the transpiler reads to skip emitting `require()` for engine types. |
-| `stubs/Debug.cs` | Unity-style `Debug.Log` / `LogWarning` / `LogError`. Macro-lowered by the transpiler to Luau `print` / `warn` / `task.spawn(error, ...)`. |
+| `stubs/Debug.cs` | Unity-style `Debug.Log` / `LogWarning` / `LogError`. Macro-lowered by the transpiler. |
 | `stubs/ServerAttribute.cs`, `stubs/ClientAttribute.cs` | `[Server]` / `[Client]` markers that swap a class's output extension to `.server.luau` / `.client.luau`. |
+| `stubs/GlobalUsings.cs` | `global using RobloxCSharp.RobloxApi;` so user code can reference `Instance`, `Vector3`, etc. unqualified. |
 | `stubs/Generated/` | Generator output — `Classes/`, `DataTypes/`, `Enums/`. Gitignored; reproduced on install. |
-| `generator/*.cs` | Dump-to-C# emitter. Reads MaximumADHD's Mini-API-Dump.json + Roblox creator-docs YAML, writes typed C# stubs. |
+
+The generator source lives in the main repo at [`RobloxCSharp.RobloxApiGenerator/`](https://github.com/Stiexeno/roblox-csharp/tree/main/RobloxCSharp.RobloxApiGenerator).
 
 ## License
 
