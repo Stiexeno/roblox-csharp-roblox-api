@@ -1,0 +1,6 @@
+# Generator output — reproduced on install by the CLI.
+stubs/Generated/
+
+# .NET build artifacts (if someone runs the generator standalone)
+bin/
+obj/
