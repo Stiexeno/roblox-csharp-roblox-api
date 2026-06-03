@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+		<RootNamespace>RobloxApi.Tests</RootNamespace>
+	</PropertyGroup>
+
+	<!--
+		Pull in just the pure-function generator helpers; skip Program.cs
+		(top-level Main) and the YAML / HTTP sources that need IO + a
+		network round-trip to exercise.
+	-->
+	<ItemGroup>
+		<Compile Include="..\generator\XmlDocFormatter.cs" LinkBase="generator" />
+		<Compile Include="..\generator\TypeMapper.cs" LinkBase="generator" />
+		<Compile Include="..\generator\ApiDump.cs" LinkBase="generator" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="xunit" Version="2.4.2" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Xunit" />
+	</ItemGroup>
+
+</Project>
