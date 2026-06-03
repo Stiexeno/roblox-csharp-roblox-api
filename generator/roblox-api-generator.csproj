@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <!-- Distributed alongside `roblox-csharp` in the Aftman release
+             zip; ProjectScaffold's `init` flow shells out to this binary
+             by name after the Roblox API plugin is cloned. The single
+             distribution makes "install roblox-csharp" carry the
+             generator with it — no extra dotnet tool / NuGet feed. -->
+        <AssemblyName>roblox-api-generator</AssemblyName>
+        <RootNamespace>RobloxCSharp.RobloxApi.Generator</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="YamlDotNet" Version="16.0.0" />
+    </ItemGroup>
+
+</Project>
