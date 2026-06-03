@@ -1,18 +1,19 @@
 using RobloxCSharp.RobloxApi;
 
-// Unity-style debug macros. Calls to these are intercepted by the
-// transpiler's DebugMacroOverride and rewritten to Luau print / warn /
-// task.spawn(error, ...) with a `[file:line]` prefix. The C# bodies
-// never execute — they exist only so user code typechecks.
-//
-// Kept in the global namespace deliberately so user code can write
-// `Debug.Log(x)` without a `using`. RobloxBuiltin keeps the transpiler
-// from emitting a require() for it the same way it does for Instance /
-// Vector3 / etc.
+/// <summary>
+/// Unity-style logging shim. The transpiler macro-lowers each call into
+/// Roblox's <c>print</c> / <c>warn</c> / <c>error</c> so there's no
+/// runtime indirection.
+/// </summary>
 [RobloxBuiltin]
 public static class Debug
 {
+    /// <summary>Prints to the output window (Roblox <c>print</c>).</summary>
     public static void Log(object message) { }
+
+    /// <summary>Prints a warning to the output window (Roblox <c>warn</c>).</summary>
     public static void LogWarning(object message) { }
+
+    /// <summary>Raises a Lua error (Roblox <c>error</c>).</summary>
     public static void LogError(object message) { }
 }

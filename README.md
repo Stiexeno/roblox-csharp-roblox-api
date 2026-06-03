@@ -31,6 +31,7 @@ dotnet run --project generator -- stubs --refresh
 | `manifest.json` | Plugin metadata. |
 | `stubs/RobloxBuiltinAttribute.cs` | Marker the transpiler reads to skip emitting `require()` for engine types. |
 | `stubs/Debug.cs` | Unity-style `Debug.Log` / `LogWarning` / `LogError`. Macro-lowered by the transpiler. |
+| `stubs/Game.cs` | Static `Game.GetService<T>()` — lowered to `game:GetService("T")`. |
 | `stubs/ServerAttribute.cs`, `stubs/ClientAttribute.cs` | `[Server]` / `[Client]` markers that swap a class's output extension to `.server.luau` / `.client.luau`. |
 | `stubs/GlobalUsings.cs` | `global using RobloxCSharp.RobloxApi;` so user code can reference `Instance`, `Vector3`, etc. unqualified. |
 | `stubs/Generated/` | Generator output — `Classes/`, `DataTypes/`, `Enums/`. Committed; every class/enum/member carries a `/// <summary>` block sourced from Roblox's own docs. |
