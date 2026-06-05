@@ -47,6 +47,21 @@ namespace RobloxCSharp.RobloxApi.Generator
 				if (memberSummary is not null) sb.Append(memberSummary);
 				sb.Append(line);
 				written++;
+
+				// Some Roblox functions have trailing params that are optional
+				// in Luau but show up as required in the API dump (the dump has
+				// no concept of optional). Emit shorter-arity overloads for the
+				// curated set so callers can use the natural one-arg form.
+				int optionalTail = OptionalTrailingParamCount(cls.Name, m.Name);
+				for (int drop = 1; drop <= optionalTail && drop <= m.Parameters.Count; drop++)
+				{
+					string? overload = EmitFunctionWithFewerParams(m, drop);
+					if (overload is null) continue;
+					sb.AppendLine();
+					if (memberSummary is not null) sb.Append(memberSummary);
+					sb.Append(overload);
+					written++;
+				}
 			}
 
 			sb.AppendLine("\t}");
@@ -80,8 +95,35 @@ namespace RobloxCSharp.RobloxApi.Generator
 		{
 			string ret = ReturnTypeToCSharp(m.ReturnType);
 			string name = TypeMapper.SanitizeIdentifier(m.Name);
-			string parameters = EmitParameters(m);
+			string parameters = EmitParameters(m.Parameters);
 			return $"\t\tpublic extern {ret} {name}({parameters});\n";
+		}
+
+		// Emits a function signature with the last `dropTail` parameters removed.
+		// Used to synthesise overloads for methods whose trailing params are
+		// optional in Luau (e.g. Instance:WaitForChild(name, [timeOut])).
+		private static string? EmitFunctionWithFewerParams(ApiMember m, int dropTail)
+		{
+			if (m.MemberType != "Function") return null;
+			int keep = m.Parameters.Count - dropTail;
+			if (keep < 0) return null;
+			string ret = ReturnTypeToCSharp(m.ReturnType);
+			string name = TypeMapper.SanitizeIdentifier(m.Name);
+			string parameters = EmitParameters(m.Parameters.Take(keep).ToList());
+			return $"\t\tpublic extern {ret} {name}({parameters});\n";
+		}
+
+		// Curated table of methods whose trailing parameters are optional in
+		// Luau but appear required in the Roblox API dump. The value is the
+		// number of trailing parameters that should each produce a
+		// shorter-arity overload. Add entries here as new gaps surface.
+		private static int OptionalTrailingParamCount(string className, string memberName)
+		{
+			return (className, memberName) switch
+			{
+				("Instance", "WaitForChild") => 1, // timeOut is optional
+				_ => 0,
+			};
 		}
 
 		private static string ReturnTypeToCSharp(List<ApiTypeRef> returns)
@@ -120,12 +162,12 @@ namespace RobloxCSharp.RobloxApi.Generator
 			return $"\t\tpublic {delegateType} {name} {{ get; set; }}\n";
 		}
 
-		private static string EmitParameters(ApiMember m)
+		private static string EmitParameters(IList<ApiParam> parameters)
 		{
-			if (m.Parameters.Count == 0) return "";
+			if (parameters.Count == 0) return "";
 			List<string> parts = new();
 			HashSet<string> seenParamNames = new();
-			foreach (ApiParam p in m.Parameters)
+			foreach (ApiParam p in parameters)
 			{
 				string type = TypeMapper.ToCSharp(p.Type);
 				string pname = TypeMapper.SanitizeIdentifier(string.IsNullOrEmpty(p.Name) ? "arg" : p.Name);
