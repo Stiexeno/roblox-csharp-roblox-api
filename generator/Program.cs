@@ -52,14 +52,22 @@ namespace RobloxCSharp.RobloxApi.Generator
 
 			HashSet<string> enumNames = new(dump.Enums.Select(e => e.Name));
 			DataTypeYamlSource yamlSource = new(Path.Combine(Path.GetTempPath(), "rbx-datatype-yaml"));
-			int dataTypes = 0, dataTypeBodies = 0;
+			int dataTypes = 0, dataTypeBodies = 0, dataTypeSkipped = 0;
 			foreach (string name in DataTypeEmitter.Collect(dump))
 			{
 				DataTypeSchema? schema = await yamlSource.LoadAsync(name, refresh);
-				string content;
+				string? content;
 				if (schema is null)
 				{
 					content = DataTypeEmitter.Emit(name, docs);
+					if (content is null)
+					{
+						// DataType aliased to a built-in C# shape
+						// (e.g. Instances → Instance[]). No stub
+						// file needed.
+						dataTypeSkipped++;
+						continue;
+					}
 				}
 				else
 				{
@@ -71,7 +79,7 @@ namespace RobloxCSharp.RobloxApi.Generator
 				dataTypes++;
 			}
 
-			Console.WriteLine($"Emitted: {classes} classes, {enums} enums, {dataTypes} datatype files ({dataTypeBodies} with YAML bodies, {dataTypes - dataTypeBodies} empty stubs).");
+			Console.WriteLine($"Emitted: {classes} classes, {enums} enums, {dataTypes} datatype files ({dataTypeBodies} with YAML bodies, {dataTypes - dataTypeBodies} empty stubs, {dataTypeSkipped} aliased to built-ins).");
 			return 0;
 		}
 

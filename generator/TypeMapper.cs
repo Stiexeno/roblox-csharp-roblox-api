@@ -11,12 +11,30 @@ namespace RobloxCSharp.RobloxApi.Generator
 			{
 				"Primitive" => MapPrimitive(type.Name),
 				"Class" => SanitizeIdentifier(type.Name),
-				"DataType" => SanitizeIdentifier(type.Name),
+				"DataType" => MapDataType(type.Name),
 				"Enum" => $"Enums.{SanitizeIdentifier(type.Name)}",
 				"Group" => "object",
 				_ => "object",
 			};
 		}
+
+		// `Instances` is Roblox's name for a Lua array of Instance
+		// (return type of GetChildren / GetDescendants / GetPlayers /
+		// GetTagged). Mapping it to `Instance[]` lets the transpiler's
+		// existing array lowerings emit correct Luau (`#x`, `x[i+1]`,
+		// `ipairs`) — otherwise consumers have no way to call `.Length`
+		// or index into the result without a LINQ-style workaround.
+		private static string MapDataType(string name) => name switch
+		{
+			"Instances" => "Instance[]",
+			_ => SanitizeIdentifier(name),
+		};
+
+		// True for any DataType name aliased away by MapDataType —
+		// DataTypeEmitter checks this to skip the stub file so we
+		// don't ship a placeholder class shadowing the C# array.
+		public static bool IsAliasedDataType(string name) =>
+			name is "Instances";
 
 		private static string MapPrimitive(string name) => name switch
 		{
