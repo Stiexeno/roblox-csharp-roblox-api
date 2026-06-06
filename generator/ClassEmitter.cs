@@ -122,6 +122,8 @@ namespace RobloxCSharp.RobloxApi.Generator
 			return (className, memberName) switch
 			{
 				("Instance", "WaitForChild") => 1, // timeOut is optional
+				("Instance", "FindFirstChild") => 1, // recursive defaults false
+				("Instance", "FindFirstChildWhichIsA") => 1, // recursive defaults false
 				_ => 0,
 			};
 		}
